@@ -1,4 +1,4 @@
---1. вывести количество фильмов в каждой категории, отсортировать по убыванию.
+--1-------------------------------------------------
 select count(*) as film_cnt, c."name" as category 
 from category c  
 	inner join film_category fc on fc.category_id = c.category_id
@@ -7,7 +7,7 @@ group by c."name"
 order by count(*) desc;
 
 
---2. вывести 10 актеров, чьи фильмы большего всего арендовали, отсортировать по убыванию.
+--2-------------------------------------------------
 select concat(a.first_name, ' ', a.last_name) as actor_name, sum(f.rental_duration) as rental_duration
 from film f 
 	inner join film_actor fa on f.film_id = fa.film_id 
@@ -16,7 +16,7 @@ group by actor_name
 order by actor_name desc
 limit 10;
 
---3. вывести категорию фильмов, на которую потратили больше всего денег.
+--3-------------------------------------------------
 select c."name" as category, sum(f.rental_rate * f.rental_duration) as cost
 from category c
      inner join film_category fc ON c.category_id = fc.category_id
@@ -25,13 +25,13 @@ group by c."name"
 order by cost desc 
 limit 1;
 
---4. вывести названи€ фильмов, которых нет в inventory. Ќаписать запрос без использовани€ оператора IN.
+--4-------------------------------------------------
 select f.title as film_title
 from film f 
 	left join inventory i on f.film_id = i.film_id 
 where i.film_id is null;
 
---5. вывести топ 3 актеров, которые больше всего по€вл€лись в фильмах в категории УChildrenФ. ≈сли у нескольких актеров одинаковое кол-во фильмов, вывести всех.
+--5-------------------------------------------------
 select t.actor_name
 from 
 	(
@@ -46,7 +46,7 @@ from
 	) t
 where t.r <= 3;
 
---6. вывести города с количеством активных и неактивных клиентов (активный Ч customer.active = 1). ќтсортировать по количеству неактивных клиентов по убыванию.
+--6-------------------------------------------------
 select c.city,
 sum(case when cu.active = 1 then 1 else 0 end) as active_cnt,
 sum(case when cu.active = 0 then 1 else 0 end) as inactive_cnt
@@ -56,8 +56,7 @@ from customer cu
 group by c.city
 order by inactive_cnt desc;
 
-/*7. вывести категорию фильмов, у которой самое большое кол-во часов суммарной аренды в городах (customer.address_id в этом city), и которые начинаютс€ на букву УaФ. 
- 	“о же самое сделать дл€ городов в которых есть символ У-Ф. Ќаписать все в одном запросе.*/
+--7-------------------------------------------------
 select t.category
 from 
 (
