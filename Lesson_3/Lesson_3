@@ -1,0 +1,91 @@
+--1. вывести количество фильмов в каждой категории, отсортировать по убыванию.
+select count(*) as film_cnt, c."name" as category 
+from category c  
+	inner join film_category fc on fc.category_id = c.category_id
+	inner join film f on fc.film_id = f.film_id 	 	
+group by c."name"
+order by count(*) desc;
+
+
+--2. вывести 10 актеров, чьи фильмы большего всего арендовали, отсортировать по убыванию.
+select concat(a.first_name, ' ', a.last_name) as actor_name, sum(f.rental_duration) as rental_duration
+from film f 
+	inner join film_actor fa on f.film_id = fa.film_id 
+	inner join actor a on fa.actor_id = a.actor_id	
+group by actor_name
+order by actor_name desc
+limit 10;
+
+--3. вывести категорию фильмов, на которую потратили больше всего денег.
+select c."name" as category, sum(f.rental_rate * f.rental_duration) as cost
+from category c
+     inner join film_category fc ON c.category_id = fc.category_id
+     inner join film f ON fc.film_id = f.film_id
+group by c."name"
+order by cost desc 
+limit 1;
+
+--4. вывести названи€ фильмов, которых нет в inventory. Ќаписать запрос без использовани€ оператора IN.
+select f.title as film_title
+from film f 
+	left join inventory i on f.film_id = i.film_id 
+where i.film_id is null;
+
+--5. вывести топ 3 актеров, которые больше всего по€вл€лись в фильмах в категории УChildrenФ. ≈сли у нескольких актеров одинаковое кол-во фильмов, вывести всех.
+select t.actor_name
+from 
+	(
+	select concat(a.first_name, ' ', a.last_name) as actor_name, dense_rank() over (order by count(distinct f.film_id) desc) as r
+	from category c
+	     join film_category fc ON c.category_id = fc.category_id
+	     join film f ON fc.film_id = f.film_id
+	     join film_actor fa ON f.film_id = fa.film_id
+	     join actor a ON fa.actor_id = a.actor_id
+	where c."name" = 'Children'
+	group by actor_name
+	) t
+where t.r <= 3;
+
+--6. вывести города с количеством активных и неактивных клиентов (активный Ч customer.active = 1). ќтсортировать по количеству неактивных клиентов по убыванию.
+select c.city,
+sum(case when cu.active = 1 then 1 else 0 end) as active_cnt,
+sum(case when cu.active = 0 then 1 else 0 end) as inactive_cnt
+from customer cu
+     join address a ON cu.address_id = a.address_id
+     join city c ON a.city_id = c.city_id
+group by c.city
+order by inactive_cnt desc;
+
+/*7. вывести категорию фильмов, у которой самое большое кол-во часов суммарной аренды в городах (customer.address_id в этом city), и которые начинаютс€ на букву УaФ. 
+ 	“о же самое сделать дл€ городов в которых есть символ У-Ф. Ќаписать все в одном запросе.*/
+select t.category
+from 
+(
+select cat."name" as category, dense_rank() over (order by sum(f.rental_duration) desc) as rank
+from rental r
+	join customer cu on r.customer_id = cu.customer_id
+    join address a on cu.address_id = a.address_id
+    join city c ON a.city_id = c.city_id
+    join inventory i on r.inventory_id = i.inventory_id
+    join film f on i.film_id = f.film_id
+	join film_category fc on fc.film_id = f.film_id
+	join category cat on cat.category_id = fc.category_id
+where lower(f.title) like 'a%'
+group by cat."name"
+
+union all
+
+select cat."name" as category, dense_rank() over (order by sum(f.rental_duration) desc) as rank
+from rental r
+	join customer cu on r.customer_id = cu.customer_id
+    join address a on cu.address_id = a.address_id
+    join city c ON a.city_id = c.city_id
+    join inventory i on r.inventory_id = i.inventory_id
+    join film f on i.film_id = f.film_id
+	join film_category fc on fc.film_id = f.film_id
+	join category cat on cat.category_id = fc.category_id
+where c.city like '%-%'
+group by cat."name"
+) t
+where t.rank = 1;
+
