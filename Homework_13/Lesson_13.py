@@ -150,27 +150,27 @@ df_6 = df_customer.join(df_address, df_customer.address_id == df_address.address
 df_6.show(df_6.count(), False)
 
 
-# In[209]:
+# In[210]:
 
 
 windowSpec  = Window.orderBy(F.col("rental_duration").desc())
-df_7_1 = df_rental.join(df_inventory, df_rental.inventory_id == df_inventory.inventory_id).join(df_film, df_inventory.film_id == df_film.film_id).join(df_film_category, df_film_category.film_id == df_film.film_id).join(df_category, df_film_category.category_id == df_category.category_id).where(F.col('title').like("A%")).select(
-    df_category.name.alias('category_name')
-    ,df_film.rental_duration
-    )\
-.groupBy('category_name')\
-.agg(F.sum('rental_duration').alias('rental_duration'))\
-.withColumn('rank', dense_rank().over(windowSpec))
+df_7_1 = df_rental.join(df_inventory, df_rental.inventory_id == df_inventory.inventory_id)        .join(df_film, df_inventory.film_id == df_film.film_id)        .join(df_film_category, df_film_category.film_id == df_film.film_id)        .join(df_category, df_film_category.category_id == df_category.category_id)        .where(F.col('title').like("A%"))        .select(
+            df_category.name.alias('category_name')
+            ,df_film.rental_duration
+            )\
+        .groupBy('category_name')\
+        .agg(F.sum('rental_duration').alias('rental_duration'))\
+        .withColumn('rank', dense_rank().over(windowSpec))
 
-df_7_2 = df_rental.join(df_customer, df_rental.customer_id == df_customer.customer_id).join(df_address, df_customer.address_id == df_address.address_id).join(df_city, df_address.city_id == df_city.city_id).join(df_inventory, df_rental.inventory_id == df_inventory.inventory_id).join(df_film, df_inventory.film_id == df_film.film_id).join(df_film_category, df_film_category.film_id == df_film.film_id).join(df_category, df_film_category.category_id == df_category.category_id).where(F.col('city').like("%-%")).select(
-    df_category.name.alias('category_name')
-    ,df_film.rental_duration
-    )\
-.groupBy('category_name')\
-.agg(F.sum('rental_duration').alias('rental_duration'))\
-.withColumn('rank', dense_rank().over(windowSpec))
+df_7_2 = df_rental.join(df_customer, df_rental.customer_id == df_customer.customer_id)        .join(df_address, df_customer.address_id == df_address.address_id)        .join(df_city, df_address.city_id == df_city.city_id)        .join(df_inventory, df_rental.inventory_id == df_inventory.inventory_id)        .join(df_film, df_inventory.film_id == df_film.film_id)        .join(df_film_category, df_film_category.film_id == df_film.film_id)        .join(df_category, df_film_category.category_id == df_category.category_id)        .where(F.col('city').like("%-%"))        .select(
+            df_category.name.alias('category_name')
+            ,df_film.rental_duration
+            )\
+        .groupBy('category_name')\
+        .agg(F.sum('rental_duration').alias('rental_duration'))\
+        .withColumn('rank', dense_rank().over(windowSpec))
 
-df_7 = df_7_1.unionAll(df_7_2).where(F.col('rank') == 1).select(F.col('category_name')).show()
+df_7 = df_7_1.unionAll(df_7_2)    .where(F.col('rank') == 1)    .select(F.col('category_name'))    .show()
 
 
 # In[ ]:
